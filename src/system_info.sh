@@ -1,24 +1,29 @@
-# příkaz cat 
-# cat nazev_souboru - vypise obsah souboru 
-# cat nazev_souboru1.txt > nazev_souboru2.txt -> kopirovani obsahu souboru do druheho, pokud nazev_souboru2.txt neexistuje vytvori jej 
-# cat nazev_souboru1.txt >> nazev_souboru2.txt -> presune obsah
-# cat > nazev_souboru -> textová úprava souboru
-alias uprav=”cat >”
+echo “Místo na disku:”
+df -h # zobrazí úložiště na disku
 
-# příkaz date -> zobrazí datum
-alias datum="date"
+echo “Datum:”
+date # zobrazí datum 
 
-# příkaz find -> najde soubor
-alias najdi="find"
+echo “Využití paměti systému:”
+free -h # využití paměti systému
 
-# příkaz mv -> přejmenování
-alias zmen_jmeno="mv"
+echo ”Procesor:”
+lscpu # informace o procesoru
 
-# příkaz rm -> smazáni souboru
-alias smaz="rm"
+# příkazy typu uname
+echo “Operační systém:”
+uname 
+echo “Hostname:”
+uname -s # hostname
+echo “Datum vydání OS:”
+uname -r  # zobrazí datum vydání OS
+echo “Verze OS:”
+uname -v # zobrazí verzi OS
+echo “Název hardware:”
+uname -m 
+echo “Architektura:”
+uname -p # architektura procesoru
 
-# příkaz uname ->zobrazí název OS
-alias os="uname"
+echo “Doba spuštění systému:”
+uptime
 
-# příkaz uptime -> doba spuštění OS
-alias doba_spusteni="uptime"
