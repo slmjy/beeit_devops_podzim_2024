@@ -1,5 +1,4 @@
 # Sem vložte kód příkazů, které zjistí více informací o Linux systému a hezky je vypíší
-<<<<<<< HEAD
 
 #!/bin/bash
 
@@ -26,13 +25,3 @@ echo
 echo "==== Aktivní uživatelé ===="
 who
 =======
-uname -s
-uname -r
-uname -v
-uname -n
-uname -m
-uname -p
-uname -i
-uname -o
-uname -a
->>>>>>> f777492e545e38e0a43518433861485864db1a60
