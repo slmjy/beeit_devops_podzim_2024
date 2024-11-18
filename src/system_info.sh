@@ -1,3 +1,4 @@
+# informace o systému
 echo “Místo na disku:”
 df -h # zobrazí úložiště na disku
 
@@ -26,4 +27,3 @@ uname -p # architektura procesoru
 
 echo “Doba spuštění systému:”
 uptime
-
