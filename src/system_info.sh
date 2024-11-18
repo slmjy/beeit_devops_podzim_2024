@@ -24,4 +24,3 @@ uptime
 echo
 echo "==== Aktivní uživatelé ===="
 who
-=======
