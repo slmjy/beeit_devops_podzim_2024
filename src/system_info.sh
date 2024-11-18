@@ -1,1 +1,6 @@
-# Sem vložte kód příkazů, které zjistí více informací o Linux systému a hezky je vypíší
+alias os="uname"
+alias datum="date"
+alias doba_spusteni="uptime"
+alias smaz="rm"
+alias zmen_jmeno="mv"
+alias najdi="find"
