@@ -1,0 +1,1 @@
+Sem mám napsat nějaké informace o mně a proč jsem se přihlásil do tohoto kurzu.
