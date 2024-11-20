@@ -22,3 +22,14 @@ uname -r >> LinuxOS_informations_about.txt #print the kernel release
 
 cat LinuxOS_informations_about.txt; echo "--- This is the end of the script. ---"
 #cat LinuxOS_informations_about.txt  #show/display content of the file "LinuxOS_informations_about.txt" in this console/terminal
+
+# Níže jsou příkazy od Daniely.
+#uname -s
+#uname -r
+#uname -v
+#uname -n
+#uname -m
+#uname -p
+#uname -i
+#uname -o
+#uname -a
