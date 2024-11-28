@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 set -e
-set +x 
+set -x 
 Help()
 {
   # show Help
@@ -44,6 +44,40 @@ No_Rights()
   	 exit 1
 	fi
 }
+Soft_Link()
+{  # create soft_link
+ echo "Chcete  a) vytvoření  soft_linku na zvolené adrese nebo b) chcete soft_link na aktuální adrese ? "
+ read ROZH
+ if [ "$ROZH" = "a" ] || [ "$ROZH" = "A" ]; then
+      echo "Zadejte cestu :"
+      read New_Path
+      if [-e "$New_Path"]; then
+     	 ln -s "$DIRECTORY/$FILE_NAME" "$New_Path/$FILE_NAME"
+      	 if [ $? -eq 0 ]; then 
+         	echo "Soft_Link souboru $Main_File na adrese $Direct_New vytvořen "
+         	return 0 
+      	 else
+         	echo "Nemáte oprávnění pro vytvoření soft_linku" >&2
+        	return 1
+      	 fi
+     else
+	echo "Neplatná cesta" >&2
+	return 1
+     fi
+  elif [ "$ROZH" = "B" ] || [ "$ROZH" = "b" ]; then
+	Actual_Path=$(pwd)
+        ln -s "$DIRECTORY/$FILE_NAME" "$Actual_Path/$FILE_NAME"
+     if [ $? -eq 0 ]; then
+        echo "Soft_Link souboru $Main_File na adrese $Direct_New vytvořen "
+        return 0
+     else
+         echo "Nemáte oprávnění pro vytvoření soft_linku" >&2
+         return 1
+     fi
+  else
+    Bad_Income
+ fi
+}
 File_W_Adress()
 {
    # make File_W_Adress
@@ -56,7 +90,17 @@ File_W_Adress()
          if [ -z "$(ls -A "/$DIRECTORY/$FILE_NAME")" ]; then
             rmdir "/$DIRECTORY/$FILE_NAME"  
             mkdir -p "/$DIRECTORY/$FILE_NAME"
-            echo "Stará složka je prázdná a tak je nová složka vytvořena"
+            echo "Stará složka je prázdná a tak je nová složka vytvořena. Přejete si vytvořit soft_link? (Y/N)"
+               read ROZHODNUTSOFT
+                
+                  if [ "$ROZHODNUTSOFT" = "Y" ] || [ "$ROZHODNUTSOFT" = "y" ]; then
+		        Soft_Link
+		  elif [ "$ROZHODNUTSOFT" = "N" ] || [ "$ROZHODNUTSOFT" = "n" ]; then
+			echo "Soft_Link nevytvořen na rozhodnutí uživatele"
+			return 0
+		  else
+			Bad_Income
+		  fi
          else
             echo "Stará složka obsahuje soubory a nelze tak vytvořit novou. Zde je její obsah:"
             echo $(ls "/$DIRECTORY/$FILE_NAME")
@@ -70,8 +114,18 @@ File_W_Adress()
                echo "Složka $FILE_NAME s adresou $DIRECTORY přepsána"
             elif [ "$ROZHODNUTI4" = "N" ] || [ "$ROZHODNUTI4" = "n" ]; then
                New_Name_W_Directory
-               echo "Složka $FILE_NAME vytvořena na adrese $DIRECTORY"
-               exit 0
+               echo "Složka $FILE_NAME vytvořena na adrese $DIRECTORY. Přejete si vytvořit soft-link (Y/N)"
+                 read ROZHODNUTSOFT2
+  
+                    if [ "$ROZHODNUTSOFT2" = "Y" ] || [ "$ROZHODNUTSOFT2" = "y" ]; then
+                          Soft_Link
+                    elif [ "$ROZHODNUTSOFT2" = "N" ] || [ "$ROZHODNUTSOFT2" = "n" ]; then
+                          echo "Soft_Link nevytvořen na rozhodnutí uživatele"
+                          return 0
+		    else 
+			  Bad_Income	
+		    fi
+               
 	    elif [ "$ROZHODNUTI4" = "E" ] || [ "$ROZHODNUTI4" = "e" ]; then
 		echo "Program ukončen uživatelem "
 		exit 0
@@ -81,13 +135,33 @@ File_W_Adress()
         fi
        elif [ "$ROZHODNUTI3" = "P" ] || [ "$ROZHODNUTI3" = "p" ]; then
             New_Name_W_Directory
+		echo "Přejete si vytvořit soft-link (Y/N)"
+                 read ROZHODNUTSOFT3
+  
+                    if [ "$ROZHODNUTSOFT3" = "Y" ] || [ "$ROZHODNUTSOFT3" = "y" ]; then
+                         Soft_Link
+                    elif [ "$ROZHODNUTSOFT3" = "N" ] || [ "$ROZHODNUTSOFT3" = "n" ]; then
+                          echo "Soft_Link nevytvořen na rozhodnutí uživatele"
+                         return 0
+		    else
+			Bad_Income
+                    fi
        else 
           Bad_Income
        fi
    else
     mkdir -p "/$DIRECTORY/$FILE_NAME"
     echo "Složka $FILE_NAME na adrese $DIRECTORY vytvořena"
-    exit 0 
+    echo "Přejete si vytvořit Soft_Link (Y/N) ?"
+     read ROZHODNUTSOFT4
+          if [ "$ROZHODNUTSOFT4" = "Y" ] || [ "$ROZHODNUTSOFT4" = "y" ]; then
+                 Soft_Link
+           elif [ "$ROZHODNUTSOFT4" = "N" ] || [ "$ROZHODNUTSOFT4" = "n" ]; then
+                  echo "Soft_Link nevytvořen na rozhodnutí uživatele"
+                  return 0
+	   else
+		Bad_Income
+           fi 
   fi
 }
 File()
