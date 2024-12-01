@@ -8,6 +8,10 @@ display_help() {
     echo "$0 -makeFile -p \"file.txt\""
     echo "$0 -addContent -p \"file.txt\" -c \"Blabla\""
     echo "$0 -createLink -p \"/path/to/existingfile.txt\" -l \"/path/to/linkname.txt\""
+    echo "$0 -getIP"
+    echo "$0 -interfaces"
+    echo "$0 -ping -t \"google.com\""
+    echo "$0 -getHostIP -h \"seznam.cz\""
     exit 1
 }
 
@@ -97,62 +101,102 @@ create_link_to_file() {
     fi
 }
 
+get_your_ip_mac_address() {
+    echo "Basic Network Information:"
+    IP_ADDR=$(hostname -I)
+    MAC_ADDR=$(ip link | grep 'link/ether' | awk '{print $2}') # print part after link/ether
+    echo "Your IP Address: $IP_ADDR"
+    echo "Your MAC Address: $MAC_ADDR"
+}
+
+get_interfaces() {
+    echo "Network Interfaces: "
+    ip -o link show | awk '{print "Interface:", $2, "Status:", $9, "MAC Address:", $17}'
+}
+
+ping_target() {
+    if [ -z "$TARGET" ]; then
+        echo "Error: No target specified for ping."
+        exit 1
+    fi
+    echo "How many requests would you like to send?"
+    read PING_COUNT
+    if ! [[ "$PING_COUNT" =~ ^[0-9]+$ ]]; then
+        echo "Error: PING_COUNT must be a valid number."
+        exit 1
+    fi
+    echo "Pinging $TARGET with $PING_COUNT requests..."
+    ping -c "$PING_COUNT" "$TARGET"
+}
+
+get_ip_from_host() {
+    if [ -z "$HOSTNAME" ]; then
+        echo "Error: No hostname specified."
+        exit 1
+    fi
+    echo "Getting IP addresses for $HOSTNAME..."
+    dig +short "$HOSTNAME"
+}
+
 ### Part controlling the first input param ###
 ### providing help if args are not supported ###
 
 if [ "$1" == "-makeDir" ]; then
     ACTION="makeDir"
-    shift     # "removing" an argument because of getopts bellow
 elif [ "$1" == "-makeFile" ]; then
     ACTION="makeFile"
-    shift
 elif [ "$1" == "-addContent" ]; then
     ACTION="addContent"
-    shift
 elif [ "$1" == "-createLink" ]; then
     ACTION="createLink"
-    shift
+elif [ "$1" == "-getIP" ]; then
+    ACTION="getIP"
+elif [ "$1" == "-getHostIP" ]; then
+    ACTION="getHostIP"
+elif [ "$1" == "-ping" ]; then
+    ACTION="ping"
+elif [ "$1" == "-interfaces" ]; then
+    ACTION="interfaces"
 else
     display_help
+    exit 1
 fi
+
+shift     # shifting an argument because of getopts bellow
 
 ### Main script orchestrating the specified action ###
 
-while getopts "p:c:l:" OPT; do
+while getopts "p:c:l:h:t:" OPT; do
     case "${OPT}" in
-        p)
-            INPUT_PATH=$OPTARG
-            ;;
-        c)
-            CONTENT=$OPTARG
-            ;;
-        l)
-            LINKPATH=$OPTARG
-            ;;
-        *)
-            display_help
-            ;;
+        p) INPUT_PATH=$OPTARG ;;
+        c) CONTENT=$OPTARG ;;
+        l) LINKPATH=$OPTARG ;;
+        h) HOSTNAME=$OPTARG ;;
+        t) TARGET=$OPTARG ;;
+        *) display_help ;;
     esac
 done
 
 case "$ACTION" in
     makeDir)
-        make_dir
-        ;;
+        make_dir ;;
     makeFile)
-        make_file
-        ;;
+        make_file ;;
     addContent)
-        add_content_to_file
-        ;;
+        add_content_to_file ;;
     createLink)
-        create_link_to_file
-        ;;
+        create_link_to_file ;;
+    getIP)
+        get_your_ip_mac_address ;;
+    getHostIP)
+        get_ip_from_host ;;
+    ping)
+        ping_target ;;
+    interfaces)
+        get_interfaces ;;
     *)
-        display_help
-        ;;
+        display_help ;;
 esac
-
 
 # echo "Assigning editing right to everyone for file: $DIR/$FILE..."
 # chmod 766 ./$DIR/$FILE
