@@ -1,0 +1,1 @@
+chtěl bych se naučit GIT :-)
