@@ -5,7 +5,11 @@ echo "FILE - Create new file"
 echo " LINE - insert line into file"
 echo "HARD - create hard link"
 echo "SOFT - create soft link"
-
+echo "NET - your net information"
+echo "IP - your IP address"
+echo "MAC - your Mac address"
+echo "PING - find IP address from host name"
+echo "HOST - find all IP address from host name"
 read vstup
 case $vstup in 
 	DIR)
@@ -34,4 +38,23 @@ case $vstup in
 		else
 				echo "Your file don't exist, first create a file"		
 				fi;;
+	NET)
+		echo "Tvoje síťové nastavení je: "
+		ifconfig;;
+	
+	IP)
+		echo "Tvoje IP adresa je:"
+				ifconfig | grep inet;;
+	MAC)
+		echo "Tvoje MAC addresa je: "
+		ifconfig | grep ether;;
+		
+	PING)		
+		read -p "Write host name: " HOSTNAME
+		ping -c 2 $HOSTNAME;;
+	HOST)
+		read -p "Write host name: " HOSTNAME
+		host $HOSTNAME;;
 	esac
+
+		
