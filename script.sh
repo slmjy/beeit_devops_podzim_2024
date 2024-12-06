@@ -1,5 +1,6 @@
 #!/bin/bash
-
+set -e
+set +x 
 Help()
 {
   # show Help
@@ -234,7 +235,7 @@ File()
              fi
 
        else
-        mkdir $FILE_NAME
+        mkdir "$FILE_NAME"
         echo "Soubor $FILE_NAME vytvořen"
         exit 0
        fi
@@ -425,26 +426,27 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
      -h) # show Help
 	 Help
-	 exit 0 ;;
+	 return 0 ;;
      -inst_pack)
          Apt_Installed
-         exit 0 ;;
+         return 0 ;;
      -find_docker)
          Find_Dock
-         exit 0 ;;
+         return 0 ;;
      -apt_uprg)
          Apt_Uprgrade
-         exit 0 ;;
+         return 0 ;;
      -find_IP) 
-	Find_IP;;
+	TASK=Najdi_IP;;
      -find_MAC)
-	Find_MAC;;
-     -ping) TARGET="$2"
+	TASK=Najdi_MAC;;
+     -ping)
 	if [ -z "$2" ]; then
                  echo "CHYBA: Chybí argument" >&2
                  exit 1
 	fi
-	 Ping
+	TARGET="$2"
+	TASK=Ping_Host
 	shift 2;;
      -get_IP) 
 	if [ -z "$2" ]; then
@@ -452,6 +454,7 @@ while [[ $# -gt 0 ]]; do
                   exit 1
 	fi 
 	TARGET="$2"
+	Task=Get_IP_from_Host
 	shift 2 ;;	
 
      -makeDir) 
@@ -459,6 +462,7 @@ while [[ $# -gt 0 ]]; do
                   echo "CHYBA: Chybí argument" >&2
                   exit 1
 	fi
+	TASK=Make_Directory
 	FILE_NAME="$2"
         shift 2 ;;  
      -path) 
@@ -475,13 +479,27 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ -n "$Target" ]; then
-	Get_IP
-	exit 0
-elif [ -n "$FILE_NAME" ] && [ -n "$DIRECTORY" ]; then
-	File_W_Directory 
-	exit 0
-elif [ -n "$FILE_NAME" ] && [ -z "$DIRECTORY" ]; then
-	File
-	exit 0
-fi
+case "$TASK" in
+	Najdi_IP) 
+		Find_IP
+		exit $?;;
+	Najdi_MAC)
+		Find_MAC
+		exit $?;;
+	Ping_Host)
+		Ping
+		exit $?;;
+	Get_IP_from_Host)
+		Get_IP
+		exit $?;;
+	Make_Directory)
+		if [ -n "$DIRECTORY" ]; then 
+			File_W_Adress
+		else
+			File
+		fi
+		exit $?;;
+	*)
+		echo "CHYBA: Neplatný argument" >&2
+		exit 1 ;;
+esac 
