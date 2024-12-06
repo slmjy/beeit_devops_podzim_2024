@@ -12,6 +12,11 @@ display_help() {
     echo "$0 -interfaces"
     echo "$0 -ping -t \"google.com\""
     echo "$0 -getHostIP -h \"seznam.cz\""
+    echo "$0 -listDockerImages"
+    echo "$0 -listDockerContainers"
+    echo "$0 -findDockerImage -n \"image_name\""
+    echo "$0 -findDockerContainer -n \"container_name\""
+    echo "$0 -killProcess -i 1234 -m SIGTERM"
     exit 1
 }
 
@@ -110,7 +115,7 @@ get_your_ip_mac_address() {
 }
 
 get_interfaces() {
-    echo "Network Interfaces: "
+    echo "Network Interfaces:"
     ip -o link show | awk '{print "Interface:", $2, "Status:", $9, "MAC Address:", $17}'
 }
 
@@ -138,41 +143,95 @@ get_ip_from_host() {
     dig +short "$HOSTNAME"
 }
 
+list_docker_images() {
+    echo "Listing all Docker images:"
+    sudo docker images || { echo "Error: Docker is not running."; exit 1; }
+}
+
+list_docker_containers() {
+    echo "Listing all Docker containers:"
+    sudo docker ps -a || { echo "Error: Docker is not running."; exit 1; }
+}
+
+find_docker_image() {
+    echo "Searching for Docker image: $IMAGE_NAME"
+    if sudo docker images | grep -q "$IMAGE_NAME"; then
+        echo "Docker image '$IMAGE_NAME' exists."
+    else
+        echo "Docker image '$IMAGE_NAME' does not exist."
+        exit 1
+    fi
+}
+
+find_docker_container() {
+    echo "Searching for Docker container: $CONTAINER_NAME"
+    if sudo docker ps -a | grep -q "$CONTAINER_NAME"; then
+        echo "Docker container '$CONTAINER_NAME' exists."
+    else
+        echo "Docker container '$CONTAINER_NAME' does not exist."
+        exit 1
+    fi
+}
+
+kill_process() {
+    if [ -z "$PID" ]; then
+        echo "Error: PID must be specified with -i."
+        exit 1
+    fi
+
+    if [ -z "$MODE" ]; then
+        echo "Error: Signal mode must be specified with -m."
+        exit 1
+    fi
+
+    if [ "$PID" -eq 1 ]; then
+        echo "Error: Cannot kill process with PID 1 for safety reasons."
+        exit 1
+    fi
+
+    echo "Attempting to kill process with PID $PID using signal $MODE..."
+    if sudo kill "-$MODE" "$PID"; then
+        echo "Process $PID successfully killed with signal $MODE."
+    else
+        echo "Failed to kill process $PID."
+        exit 1
+    fi
+}
+
 ### Part controlling the first input param ###
 ### providing help if args are not supported ###
 
-if [ "$1" == "-makeDir" ]; then
-    ACTION="makeDir"
-elif [ "$1" == "-makeFile" ]; then
-    ACTION="makeFile"
-elif [ "$1" == "-addContent" ]; then
-    ACTION="addContent"
-elif [ "$1" == "-createLink" ]; then
-    ACTION="createLink"
-elif [ "$1" == "-getIP" ]; then
-    ACTION="getIP"
-elif [ "$1" == "-getHostIP" ]; then
-    ACTION="getHostIP"
-elif [ "$1" == "-ping" ]; then
-    ACTION="ping"
-elif [ "$1" == "-interfaces" ]; then
-    ACTION="interfaces"
-else
-    display_help
-    exit 1
-fi
-
+ACTION=""
+case "$1" in
+    -makeDir) ACTION="makeDir" ;;
+    -makeFile) ACTION="makeFile" ;;
+    -addContent) ACTION="addContent" ;;
+    -createLink) ACTION="createLink" ;;
+    -getIP) ACTION="getIP" ;;
+    -getHostIP) ACTION="getHostIP" ;;
+    -ping) ACTION="ping" ;;
+    -interfaces) ACTION="interfaces" ;;
+    -listDockerImages) ACTION="listDockerImages" ;;
+    -listDockerContainers) ACTION="listDockerContainers" ;;
+    -findDockerImage) ACTION="findDockerImage" ;;
+    -findDockerContainer) ACTION="findDockerContainer" ;;
+    -killProcess) ACTION="killProcess" ;;
+    *) display_help ; exit 1 ;;
+esac
 shift     # shifting an argument because of getopts bellow
 
 ### Main script orchestrating the specified action ###
 
-while getopts "p:c:l:h:t:" OPT; do
+while getopts "p:c:l:h:t:n:i:m:" OPT; do
     case "${OPT}" in
         p) INPUT_PATH=$OPTARG ;;
         c) CONTENT=$OPTARG ;;
         l) LINKPATH=$OPTARG ;;
         h) HOSTNAME=$OPTARG ;;
         t) TARGET=$OPTARG ;;
+        n) NAME=$OPTARG ;;
+        i) PID=$OPTARG ;;
+        m) MODE=$OPTARG ;;
         *) display_help ;;
     esac
 done
@@ -194,27 +253,18 @@ case "$ACTION" in
         ping_target ;;
     interfaces)
         get_interfaces ;;
+    listDockerImages)
+        list_docker_images ;;
+    listDockerContainers)
+        list_docker_containers ;;
+    findDockerImage)
+        IMAGE_NAME=$NAME
+        find_docker_image ;;
+    findDockerContainer)
+        CONTAINER_NAME=$NAME
+        find_docker_container ;;
+    killProcess)
+        kill_process ;;
     *)
         display_help ;;
 esac
-
-# echo "Assigning editing right to everyone for file: $DIR/$FILE..."
-# chmod 766 ./$DIR/$FILE
-# echo "==============================="
-
-# ln -s ./$DIR/$FILE /tmp/soft_link_system_packages
-# ln ./$DIR/$FILE /tmp/hard_link_system_packages
-# echo "Created soft & hard links for file: $DIR/$FILE"
-# echo "==============================="
-
-#echo "Currently installed packages:"
-#apt list --installed
-#echo "==============================="
-
-#echo "Listing docker package:"
-#apt list --installed | grep docker
-#echo "==============================="
-
-#echo "Packages which might be updated:"
-#apt list --upgradable
-#echo "==============================="
