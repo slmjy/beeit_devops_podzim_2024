@@ -1,0 +1,11 @@
+# bez docker compose nelze spouštět např. příkazy s dockerem (sudo)
+# šlo by: sudo docker run -v /var/run/docker.sock:/var/run/docker.sock custom-linux-cli -listDockerImages
+
+version: '1'
+services:
+  custom-linux-cli:
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: "no"
+    user: root
