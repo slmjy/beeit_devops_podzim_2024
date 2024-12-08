@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set +e
 set +x 
 Help()
 {
@@ -429,12 +429,170 @@ Get_IP()
 	exit 1
  fi
 }
+Docker_Pull()
+{ #pull_users_docker_container
+if command -v docker > /dev/null 2>&1; then
+	docker images "$CONTAINER" > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		echo ""$CONTAINER" je už stažen"
+	else
+		docker pull "$CONTAINER" > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				docker pull "$CONTAINER"
+				echo ""$CONTAINER" úspěšně stažen"
+			else
+				echo "CHYBA: Špatně zadaný název nebo chyba v přípojení" >&2
+				exit 1
+			fi 
+	fi
+else
+	echo "CHYBA:Nemáte nainstalovaný docker" >&2
+	exit 1
+fi
+}
+Listing_Docker()
+{ #list_of_running_containers
+if command -v docker > /dev/null 2>&1; then
+	docker ps > /dev/null 2>&1
+	echo "Chcete vypsat pouze aktivní nebo včechny? (active/all)"
+	read ROZ
+	if [ "$ROZ" = "active" ] || [ "$ROZ" = "Active" ] || [ "$ROZ" = "ACTIVE" ]; then
+		if [ $? -eq 0 ]; then
+			docker ps
+
+		else
+			echo "CHYBA: Nemáte oprávnění nebo správně nakonfigované přípojení" >&2
+			exit 1
+		fi
+	elif [ "$ROZ" = "all" ] || [ "$ROZ" = "All" ] || [ "$ROZ" = "ALL" ]; then
+		if [ $? -eq 0 ]; then
+                        docker ps -a
+         
+                 else
+                         echo "CHYBA: Nemáte oprávnění nebo správně nakonfigované přípojení" >&2
+                         exit 1
+		fi
+	else
+		echo "CHYBA: Neplatný vstup" >&2
+		exit 1
+	fi
+  
+else
+	echo "CHYBA:Nemáte nainstalovaný docker" >&2
+	exit 1
+fi
+}
+
+Docker_All_Imagine()
+{ #list_all_imagines 
+if command -v docker > /dev/null 2>&1; then
+        docker images -a > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		docker images -a
+	else
+		echo "CHYBA: Nemáte oprávnění nebo správně nakonfigované přípojení" >&2
+		exit 1
+	fi
+else
+	echo "CHYBA:Nemáte nainstalovaný docker" >&2
+         exit 1
+fi
+}
+
+
+Specific_Image()
+{ #find specific image in docker
+if command -v docker > /dev/null 2>&1; then
+	docker image inspect "$IMAGE" > /dev/null 2>&1
+	RESULT=$?
+	if [ $RESULT -eq 0 ]; then
+		echo ""$IMAGE" existuje"
+		docker images "$IMAGE"
+		return 0
+	else
+		echo "CHYBA: "$IMAGE" nenalezen" >&2
+		exit 1
+	fi
+else
+	echo "CHYBA:Nemáte nainstalovaný docker" >&2
+	exit 1
+fi
+}
+Specifi_Container()
+{ #find_container_by_name
+if command -v docker > /dev/null 2>&1; then
+	if [ "$CONTAINER" = "Unknown" ] || [ "$CONTAINER" = "UNKNOWN" ] || [ "$CONTAINER" = "unknown" ]; then
+		CON_LIST=$(docker ps -a --filter "ancestor="$IMAGE"" --format "{{.Names}}")
+		echo "Výpis kontejnerů: $CON_LIST"
+		exit 0
+	else
+		IMAGINES_CONTAINER=$(docker ps -a --filter "ancestor="$IMAGE"" --format "{{.Names}}") 
+		if [[ "$IMAGINES_CONTAINER" == *"$CONTAINER"* ]]; then
+			ID=$( docker ps -aqf "name=$CONTAINER")
+			echo "$CONTAINER se nachází v $IMAGE s ID $ID"
+		
+		else
+			echo "$CONTAINER neexistuje v $IMAGE jsou pouze: $IMAGINES_CONTAINER"
+			exit 0
+		fi
+	fi
+else
+        echo "CHYBA:Nemáte nainstalovaný docker" >&2
+	exit 1
+fi
+}
+Process_Kill()
+{ #kill_proces
+if  [ -n "$PID" ]; then
+	if [ $PID -eq 1 ]; then
+		echo "CHYBA:Iniciační proces nelze zastavit" >&2
+		exit 1
+	else
+		docker exec "$CONTAINER" kill 0 "$PID" 2>/dev/null
+		if [ $? -eq 0 ]; then
+			case $CHOICE in 
+				1) 
+					echo "Restartuji proces $PID v $CONTAINER ......."
+					docker exec "$CONTAINER" kill -SIGHUB "$PID";;
+				2)
+					echo "Pokusím se smazat proces $PID v $CONTAINER ......."
+					docker exec "$CONTAINER" kill -SIGINIT "$PID";;
+				3)
+					echo "Zastavuji proces $PID v $CONTAINER a ukládám informace ......"
+					docker exec "$CONTAINER" kill -SIGQUIT "$PID";;
+				15)
+					echo "Smažu proces $PID v $CONTAINER ........"
+					docker exec "$CONTAINER" kill -SIGTERM "$PID";;
+				9)
+					echo "Zastavuji proces $PID v $CONTAINER ......."
+					docker exec "$CONTAINER" kill -SIGKILL "$PID";;
+				h)
+					echo "-1	SIGHUB		Restartuje proces se stejným PID"
+					echo "-2        SIGINT          Zkusí smazat proces, ale né vždy se to může podařit"
+					echo "-3        SIGQUIT         Zastaví proces a uloží informace do složky"
+					echo "-15       SIGTERM         Smaže proces, základní hodnota"
+					echo "-9        SIGKILL         Okamžitě zastaví proces"
+					exit 0;;
+				*)
+					echo "Neplatná volba" >&2
+					exit 1;;
+		
+			esac
+		else
+			echo "CHYBA: $PID v $CONTAINER neexistuje" >&2
+			exit 1
+		fi
+	fi
+else
+	echo "Nebylo zadáno PID" >&2
+	exit 1
+fi
+} 
 
 if  [ $# -eq 0 ]; then
 	echo "CHYBA: Nezadán žádný argument" >&2
 	exit 1
 fi
-
 while [[ $# -gt 0 ]]; do
   case "$1" in
      -h) # show Help
@@ -455,6 +613,47 @@ while [[ $# -gt 0 ]]; do
      -find_MAC)
 	Find_MAC
 	exit 0 ;;
+     -dock_list)
+	Listing_Docker
+	exit 0;;
+     -dock_image_all)
+	Docker_All_Imagine
+	exit 0;;
+     -dock_find_image)
+	TASK=Find_Docker_Image
+	shift ;;
+     -dock_find_cont)
+	TASK=Find_Specific_Container
+	shift ;;
+     -kill)
+	if [ -z "$2" ]; then
+		echo "CHYBA: Chybí argument" >&2
+		exit 1
+	fi
+	TASK=Kill_Process
+	CHOICE="$2"
+	shift 2;;
+     -image)
+	if [ -z "$2" ]; then
+		echo "CHYBA: Chybí argument" >&2
+		exit 1
+	fi
+	IMAGE="$2"
+	shift 2;;
+     -container)
+	 if [ -z "$2" ]; then
+		 echo "CHYBA: Chybí argument" >&2
+		exit 1
+	fi
+	CONTAINER="$2"
+	shift 2;;
+     -PID) 
+	if [ -z "$2" ]; then
+		echo "CHYBA: Chybí argument" >&2
+		exit 1
+	fi
+	PID="$2"
+	shift 2;;
      -ping)
 	if [ -z "$2" ]; then
                  echo "CHYBA: Chybí argument" >&2
@@ -488,7 +687,8 @@ while [[ $# -gt 0 ]]; do
 	DIRECTORY="$2"
         shift 2 ;; 
      -interface)
-	INTERFACE="$2";; 
+	INTERFACE="$2"
+	shift 2;; 
     *) echo "CHYBA: Neznámá volba: $1" >&2
        exit 1 ;;
   esac
@@ -508,6 +708,14 @@ case "$TASK" in
 			File "$FILE_NAME" 
 		fi
 		exit $?;;
+	Find_Docker_Image)
+		Specific_Image "$IMAGE"
+		exit $?;;
+	Find_Specific_Container)
+		Specifi_Container "$IMAGE" "$CONTAINER"
+		exit $?;;
+	Kill_Process)
+		Process_Kill "$CHOICE" "$CONTAINER" "$PID"
 	*)
 		echo "CHYBA: Neplatný argument" >&2
 		exit 1 ;;
