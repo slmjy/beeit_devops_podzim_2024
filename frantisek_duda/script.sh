@@ -34,6 +34,7 @@ Help()
   echo " Příklad použití ./script.sh -dock_find_cont -image ubuntu -container unknown"
   echo " -kill			Zastavení procesu v volbou způsobu, pro vypsání možností zvolte parametr -h"
   echo " Příklad použití ./script.sh -kill 9 -container elegant_clarke -PID 265"
+exit 0
 }
 
 
@@ -272,18 +273,21 @@ Apt_Installed()
   # instaled packedges
 	echo "Seznam všech nainstalovaných balíčků:"
 	apt list --installed
+	exit 0
 }
 Find_Dock()
 {
   #searching for docker
 	echo "Vyhledání docker balíčku:"
 	apt search docker
+	exit 0
 }
 Apt_Uprgrade()
 { 
   #list of upgradable packedges
 	echo "Seznam nainstalovaných balíčků, u nichž je možné provést update:"
 	apt list --upgradable
+	exit 0
 }
 Legit_Interface()
 { # kontrola_interface
@@ -309,7 +313,7 @@ Find_IP()
 			echo "Přejete si vypsat pouze vytaženou IP adresu (Y/N)"	
 			read VOLBA1			
 				 if [ "$VOLBA1" = "Y" ] || [ "$VOLBA1" = "y" ]; then
-					ip addr show "$INTERFACE" | grep -oP 'inet \K[\d.]+'
+					ip addr show "$INTERFACE" | awk '/inet / {print $2}' | cut -d/ -f1
 				
 				elif [ "$VOLBA1" = "n" ] || [ "$VOLBA1" = "N" ]; then
 					ifconfig "$INTERFACE"
@@ -324,9 +328,26 @@ Find_IP()
 			read VOLBA
 
 			if [ "$VOLBA" = "y" ] || [ "$VOLBA" = "Y" ]; then
-				sudo apt install net-tools
+				apt-get update && apt install net-tools
+				source /etc/profile
+				if ! command -v ping > /dev/null 2>&1; then
+                    			echo "CHYBA: Nástroj ping není k dispozici ani po instalaci." >&2
+                    			exit 1
+				fi
+
 				echo "Nástroj nainstalován. Provedu kontrolu ....."
-				exec "$0"
+				echo "Přejete si vypsat pouze vytaženou IP adresu (Y/N)"
+				read VOLB1			
+				if [ "$VOLB1" = "Y" ] || [ "$VOLB1" = "y" ]; then
+					ip addr show "$INTERFACE" | awk 'inet \K[\d.]+'
+				
+				elif [ "$VOLB1" = "n" ] || [ "$VOLB1" = "N" ]; then
+					ifconfig "$INTERFACE"
+				
+				 else   
+					echo "Neplatný vstup" >&2
+					exit 1
+				fi
 			elif [ "$VOLBA" = "n" ] || [ "$VOLBA" = "N" ]; then
 				echo "Konec programu"
 			
@@ -376,7 +397,7 @@ Write_Interface()
                   read VOLBA2
   
                   if [ "$VOLBA2" = "y" ] || [ "$VOLBA2" = "Y" ]; then
-                                  sudo apt  install tcpdump  # version 4.99.4-3ubuntu1
+                                  apt install tcpdump  # version 4.99.4-3ubuntu1
                                   echo "Nástroj nainstalován. Provedu kontrolu ....."
                                   exec "$0"
                    elif [ "$VOLBA2" = "n" ] || [ "$VOLBA2" = "N" ]; then
