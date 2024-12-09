@@ -7,25 +7,33 @@ Help()
   echo " Nápověda"
   echo  
   echo " -makeDir		Pro vytvoření složky"
-  echo " -path		Pro cestu k souboru"
-  echo " -h		Nápověda"
+  echo " -path			Pro cestu k souboru"
+  echo " -h			Nápověda"
   echo "Příklad:        ./script.sh -mkdir  složka  -path home/usr/moje_data"
   echo
-  echo " -inst_pack	Seznam nainstalovaných balíčků"
-  echo " -find_docker   Najde docker balíček"
-  echo " -apt_uprg	Seznam nainstalovaných balíčků, u nichž je možné provést update"
+  echo " -inst_pack		Seznam nainstalovaných balíčků"
+  echo " -find_docker   	Najde docker balíček"
+  echo " -apt_uprg		Seznam nainstalovaných balíčků, u nichž je možné provést update"
   echo
-  echo " -find_IP	Vypíše IP adresu zařízení"
-  echo " -find_MAC      Vypíše MAC adresu zařízení"
-  echo " -interface     Zadání vlastního interface pro zjištění MAC nebo IP adresy (základní nastavení eth0)"
+  echo " -find_IP		Vypíše IP adresu zařízení"
+  echo " -find_MAC      	Vypíše MAC adresu zařízení"
+  echo " -interface    		Zadání vlastního interface pro zjištění MAC nebo IP adresy (základní nastavení eth0)"
   echo "Příklad použití: ./script.sh -find_IP -interface eth0"
   echo 
-  echo " -ping		Prověření funkčnosti Hosta"
+  echo " -ping			Prověření funkčnosti Hosta"
   echo "Příklad použití: ./script.sh -ping seznam.cz"
   echo
-  echo " -get_IP        Vypíše IP adresu podle hostname"
+  echo " -get_IP        	Vypíše IP adresu podle hostname"
   echo " Příklad použití: ./script.sh -get_IP seznam.cz "
   echo""
+  echo " -dock_list      	Vypsání dockeru"
+  echo " -dock_image_all	Vypíše všechny image "
+  echo " -dock_find_image	Nalezení image dle jména"
+  echo " Příklad použití: ./script.sh -dock_find_image -image ubuntu"
+  echo " -dock_find_cont        Nalezení kontejneru dle jména, v případě vypsání "unknown" vypíše seznam kontejneru v dané image"
+  echo " Příklad použití ./script.sh -dock_find_cont -image ubuntu -container unknown"
+  echo " -kill			Zastavení procesu v volbou způsobu, pro vypsání možností zvolte parametr -h"
+  echo " Příklad použití ./script.sh -kill 9 -container elegant_clarke -PID 265"
 }
 
 
@@ -715,7 +723,7 @@ case "$TASK" in
 		Specifi_Container "$IMAGE" "$CONTAINER"
 		exit $?;;
 	Kill_Process)
-		Process_Kill "$CHOICE" "$CONTAINER" "$PID"
+		Process_Kill "$CHOICE" "$CONTAINER" "$PID";;
 	*)
 		echo "CHYBA: Neplatný argument" >&2
 		exit 1 ;;
