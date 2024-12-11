@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  custom-linux-cli:
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: "no"
+    user: root
+
+# run without docker compose: sudo docker run -v /var/run/docker.sock:/var/run/docker.sock custom-linux-cli -listDockerImages
