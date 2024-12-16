@@ -1,6 +1,18 @@
 #!/bin/bash
 set +e
-set +x 
+set -x 
+Testing_pro_Docker()
+{
+
+echo "Spouštím test skriptu s argumentem: $1"
+if [ "$1" == "-test_argument" ]; then
+    echo "$1"
+else
+    echo "CHYBA: Neznámá volba: $1"
+    return 1
+fi
+}
+
 Help()
 {
   # show Help
@@ -42,7 +54,11 @@ New_Name()
 {
     # rename file
 	echo "Zadejte nový název"
-        read Name_New
+        read -r Name_New
+		if [ -z "$Name_New" ]; then
+			echo "CHYBA > Špatně zadaný vstup" >&2
+			return 1
+		fi
         mkdir $Name_New
 	echo "Název změněn na $Name_New"
         exit 0
@@ -53,7 +69,11 @@ New_Name_W_Directory()
 {
      # rename file with directory
          echo "Zadejte nový název"
-         read New_Nam
+         read -r New_Nam
+		 if [ -z "$Name_New" ]; then
+			echo "CHYBA > Špatně zadaný vstup" >&2
+			return 1
+		fi
          mkdir /$DIRECTORY/$New_Nam
          exit 0
 }
@@ -624,11 +644,14 @@ if  [ $# -eq 0 ]; then
 fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
-     -h) # show Help
-	 Help
-	 return 0 ;;
+     -test_argument)
+	 	Testing_pro_Docker "$1"
+	 	exit 0 ;;
+	 -h) # show Help
+		 Help
+	 	return 0 ;;
      -inst_pack)
-         Apt_Installed
+    	  Apt_Installed
          return 0 ;;
      -find_docker)
          Find_Dock
