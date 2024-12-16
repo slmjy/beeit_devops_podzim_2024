@@ -1,0 +1,37 @@
+# HW3: Další funkcionality do Linux CLI
+
+# V libovolném adresáři vytvořit složku a v ní jeden soubor.
+mkdir homework3                                                                          # Složka s názvem "homework3" se vytvoří v current working directory.
+echo "A folder called ¨homework3¨ has been just made in the current working directory."  # String ve dvojitých uvozovkách se vypíše do CLI.
+cd homework3                                                                             # Working directory je nyní složka "homework3".
+touch homework3.txt                                                                      # Vytvoří se soubor "homework3.txt".
+echo "A file called ¨homework3.txt¨ has been just made in the directory ¨homework3¨."    # String ve dvojitých uvozovkách se vypíše do CLI.
+
+# Do souboru zapište řetězec (ne manuálně, ale pomocí nějakého příkazu a bude to přímo součástí všeho CLI).
+echo "A string into the newly made text file." > homework3.txt 
+
+# Vytvořte soft/symbolic a hard link pro daný soubor do složky /tmp.
+# Hardlink:
+# ln [název souboru/složky (nejlépe včetně úplné adresy k němu/ní) ke kterému/které chci vytvořit hardlink] [název hardlinku (nejlépe včetně úplné adresy ke složce, do které chci hardlink umístit)]
+ln /absolutni_cesta_ke_slozce_se_souborem_ke_kteremu_chci_timto_prikazem_vytvorit_link/homework3.txt /tmp/hardlink_to_homework3
+echo "A hardlink to the file ¨homework3.txt¨ located in the current working directory with the name ¨hardlink_to_homework3¨ has been just made into the folder /tmp."
+
+# Soft/symbolic link:
+# ln -s [název souboru/složky (nejlépe včetně úplné adresy k němu/ní) ke kterému/které chci vytvořit soflink] [název softlinku (nejlépe včetně úplné adresy ke složce, do které chci soflink umístit)]
+ln -s /absolutni_cesta_ke_slozce_se_souborem_ke_kteremu_chci_timto_prikazem_vytvorit_link/homework3.txt /tmp/softlink_to_homework3
+echo "A softlink to the file ¨homework3.txt¨ located in the current working directory with the name ¨softlink_to_homework3¨ has been just made to the folder /tmp."
+
+# Dále script pokračuje vypsáním všech balíčku, které máte nainstalované.
+apt list --installed
+echo "The printed list above is the list of all packages installed on this device with Linux operating system via apt."
+
+# Vyhledá docker balíček.
+sudo apt update                       # Pokud příkaz neprovádí root, tak je potřeba na začátku příkazu "sudo". Rootovi stačí příkaz v této podobě <apt update>.
+$ apt search "docker"
+echo "The printout above includes all the packages containing in its name and/or description the word 'docker'."
+
+# Na závěr vypíše všechny balíčky, které mohou být upgradovany, ale samotný upgrade neproběhne.
+apt list --upgradable                       # Příkaz <apt -a list --upgradable> dělá co?
+echo "The printout above contains all the packages that may be upgraded - however no upgrades are done by this command."
+
+# Pokračujte ve svém forku a hotový script pošlete jako Pull Request na review.
