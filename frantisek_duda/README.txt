@@ -1,0 +1,1 @@
+Rád bych rozšířil své IT znalosti a díky tomu si případně zlepšit šanci na nalezení práce. Moje zkušenosti s IT: 1 rok studia na FAI ve Zlíně, kde jsme programovali ve Wolfram Mathematica a jazyku C, na střední jsme pracovali v Pythonu.
