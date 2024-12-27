@@ -292,21 +292,21 @@ Apt_Installed()
 {
   # instaled packedges
 	echo "Seznam všech nainstalovaných balíčků:"
-	apt list --installed
+	apk info
 	exit 0
 }
 Find_Dock()
 {
   #searching for docker
 	echo "Vyhledání docker balíčku:"
-	apt search docker
+	apk search docker
 	exit 0
 }
 Apt_Uprgrade()
 { 
   #list of upgradable packedges
 	echo "Seznam nainstalovaných balíčků, u nichž je možné provést update:"
-	apt list --upgradable
+	apk list --upgradable
 	exit 0
 }
 Legit_Interface()
@@ -467,7 +467,7 @@ Get_IP()
 # get_IP_from_Hostname
  if [ -n "$TARGET" ]; then
  	if host "$TARGET" > /dev/null 2>&1; then
-		IP_Adresa=$( host "$TARGET" | grep -oP 'address \K[\d.]+' )
+		IP_Adresa=$(host "$TARGET" | grep -oP 'has address \K[\d.]+')
 		echo "IP adresa "$TARGET" je "$IP_Adresa" "
 	else
 		echo "CHYBA: Nepodařilo se získat ID zkuste zkontrolovat zápis hostname" >&2
