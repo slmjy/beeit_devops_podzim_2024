@@ -31,6 +31,8 @@ RUN apk update && apk add --no-cache \
   tcpdump \
   iproute2 \
   grep \
+  bind-tools \
+  docker-cli \
   bash
 WORKDIR /home/duda_fr/beeit_devops_podzim_2024/frantisek_duda
 COPY --from=tester /test_output.txt /tmp/test_output.txt
